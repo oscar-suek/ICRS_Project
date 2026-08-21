@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ICRS — Career Recommendation</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="intro-modal-overlay" class="modal-overlay hidden">
+    <div class="modal" role="dialog" aria-labelledby="intro-modal-title">
+      <h2 id="intro-modal-title">How this works</h2>
+      <p>
+        This tool predicts a suitable career path using a machine-learning
+        model trained on academic and interest data.
+        {% if model_accuracy %}It was trained to about {{ (model_accuracy * 100) | round(1) }}%
+        accuracy on the training dataset.{% endif %}
+        Fill in the 15 fields below on a consistent scale — each one is
+        explained here — and submit to get a recommendation with a
+        confidence score and two alternative suggestions.
+      </p>
+
+      <h3>Field guide</h3>
+      <dl class="field-guide">
+        {% for f in field_info %}
+        <dt>{{ f.label }} <span class="range-hint">({{ ranges[f.field][0] }}–{{ ranges[f.field][1] }})</span></dt>
+        <dd>{{ f.description }}</dd>
+        {% endfor %}
+      </dl>
+
+      <button id="close-intro-modal" type="button">Got it</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <div class="header-row">
+      <h1>Intelligent Career Recommendation System</h1>
+      <button id="about-btn" type="button" class="about-btn" aria-label="About this project">About</button>
+    </div>
+
+    {% if not ready %}
+    <p class="warn">
+      Model artifacts not found. Place model.pkl, label_encoder.pkl, scaler.pkl,
+      and model_meta.json inside the <code>models/</code> folder, then restart the server.
+    </p>
+    {% endif %}
+
+    <form id="predict-form">
+      {% for f in features %}
+      <label>
+        {{ labels[f] }}
+        <input
+          type="number"
+          step="any"
+          name="{{ f }}"
+          min="{{ ranges[f][0] }}"
+          max="{{ ranges[f][1] }}"
+          placeholder="{{ ranges[f][0] }}–{{ ranges[f][1] }}"
+          required
+        />
+      </label>
+      {% endfor %}
+      <button type="submit">Get Recommendation</button>
+    </form>
+
+    <section id="result" class="result hidden"></section>
+  </main>
+
+  <script src="/script.js"></script>
+</body>
+</html>

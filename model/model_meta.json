@@ -1,0 +1,37 @@
+{
+  "features": [
+    "cgpa",
+    "math",
+    "english",
+    "science",
+    "programming",
+    "communication",
+    "leadership",
+    "creativity",
+    "analytical",
+    "interest_tech",
+    "interest_business",
+    "interest_health",
+    "interest_law",
+    "interest_arts",
+    "interest_education"
+  ],
+  "careers": [
+    "Accountant",
+    "Architect",
+    "Business Manager",
+    "Cybersecurity Analyst",
+    "Data Scientist",
+    "Entrepreneur",
+    "Graphic Designer",
+    "Journalist / Media",
+    "Lawyer",
+    "Mechanical Engineer",
+    "Medical Doctor",
+    "Pharmacist",
+    "Public Administrator",
+    "Software Engineer",
+    "Teacher / Educator"
+  ],
+  "accuracy": 91.92
+}
