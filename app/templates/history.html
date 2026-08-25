@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your History — ICRS</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="header-row">
+      <h1>Your prediction history</h1>
+      <a href="/" class="about-btn">Back</a>
+    </div>
+
+    {% if not rows %}
+    <p>No assessments yet — head back and fill out the form to get your first recommendation.</p>
+    {% else %}
+    <section class="result">
+      {% for row in rows %}
+      <div style="padding: 0.75rem 0; {% if not loop.last %}border-bottom: 1px solid #e2e8f0;{% endif %}">
+        <strong>{{ row.predicted_career }}</strong>
+        {% if row.confidence is not none %}
+          — {{ row.confidence }}% confidence
+          {% if row.low_confidence %}<span style="color:#92400e;">(low confidence)</span>{% endif %}
+        {% endif %}
+        <br />
+        <span style="font-size:0.8rem; color:#64748b;">{{ row.submitted_at.strftime("%Y-%m-%d %H:%M UTC") if row.submitted_at else "" }}</span>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign Up — ICRS</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="header-row">
+      <h1>Create your account</h1>
+    </div>
+
+    <form id="auth-form" class="result">
+      <label>
+        Full Name
+        <input type="text" name="full_name" required />
+      </label>
+      <label>
+        Email
+        <input type="email" name="email" required />
+      </label>
+      <label>
+        Password
+        <input type="password" name="password" minlength="8" required />
+      </label>
+      <button type="submit">Sign Up</button>
+      <p id="auth-error" class="error hidden"></p>
+    </form>
+
+    <p style="text-align:center; margin-top:1rem;">
+      Already have an account? <a href="/login">Log in</a>
+    </p>
+  </main>
+
+  <script>
+    const form = document.getElementById("auth-form");
+    const errorBox = document.getElementById("auth-error");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorBox.classList.add("hidden");
+      const data = Object.fromEntries(new FormData(form).entries());
+      try {
+        const res = await fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          errorBox.textContent = json.error || "Something went wrong.";
+          errorBox.classList.remove("hidden");
+          return;
+        }
+        window.location.href = "/";
+      } catch (err) {
+        errorBox.textContent = "Request failed: " + err;
+        errorBox.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>

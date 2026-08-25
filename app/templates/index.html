@@ -13,7 +13,7 @@
       <p>
         This tool predicts a suitable career path using a machine-learning
         model trained on academic and interest data.
-        {% if model_accuracy %}It was trained to about {{ (model_accuracy * 1) | round(1) }}%
+        {% if model_accuracy %}It was trained to about {{ (model_accuracy * 100) | round(1) }}%
         accuracy on the training dataset.{% endif %}
         Fill in the 15 fields below on a consistent scale — each one is
         explained here — and submit to get a recommendation with a
@@ -35,7 +35,18 @@
   <main class="wrap">
     <div class="header-row">
       <h1>Intelligent Career Recommendation System</h1>
-      <button id="about-btn" type="button" class="about-btn" aria-label="About this project">About</button>
+      <div style="display:flex; gap:0.5rem; flex-shrink:0;">
+        {% if db_enabled %}
+          {% if user %}
+            <a href="/history" class="about-btn">History</a>
+            <button id="logout-btn" type="button" class="about-btn">Log Out ({{ user.full_name.split(' ')[0] }})</button>
+          {% else %}
+            <a href="/login" class="about-btn">Log In</a>
+            <a href="/signup" class="about-btn">Sign Up</a>
+          {% endif %}
+        {% endif %}
+        <button id="about-btn" type="button" class="about-btn" aria-label="About this project">About</button>
+      </div>
     </div>
 
     {% if not ready %}
