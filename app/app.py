@@ -20,6 +20,10 @@ import joblib
 import numpy as np
 from flask import Flask, jsonify, render_template, request, send_from_directory
 from flask_cors import CORS
+from flask_login import current_user
+
+from db import db, db_enabled, init_db, Assessment, Prediction
+from auth import init_auth
 
 # --------------------------------------------------------------------------
 # Configuration
@@ -90,6 +94,18 @@ FIELD_DESCRIPTIONS = {
 
 app = Flask(__name__)
 CORS(app)  # allow the HTML/CSS/JS frontend to call this API from another origin/port
+
+# Needed for login sessions. In production, set a SECRET_KEY environment
+# variable on Vercel; falling back to a random value locally is fine since
+# accounts aren't available there anyway (see db_enabled() below).
+app.secret_key = os.environ.get("SECRET_KEY", os.urandom(32))
+
+DATABASE_ENABLED = init_db(app)
+init_auth(app)
+if DATABASE_ENABLED:
+    print("[ICRS] Database connected — accounts and prediction history enabled.")
+else:
+    print("[ICRS] No database configured — running in model-only mode (no accounts/history).")
 
 # --------------------------------------------------------------------------
 # Load model artifacts once at startup
@@ -231,6 +247,35 @@ def log_prediction(payload: dict, predicted_career: str, confidence: float):
         traceback.print_exc()
 
 
+def save_to_history(payload: dict, predicted_career: str, confidence: float, top_3: list, low_confidence: bool):
+    """Save the assessment + prediction to the database for the logged-in user.
+    No-op if the database isn't configured or nobody is logged in. Wrapped so
+    a database failure can never prevent a valid prediction from being
+    returned to the user — same fail-safe pattern as log_prediction()."""
+    if not DATABASE_ENABLED or not current_user.is_authenticated:
+        return
+    try:
+        assessment = Assessment(
+            user_id=current_user.id,
+            **{f: float(payload[f]) for f in feature_order},
+        )
+        db.session.add(assessment)
+        db.session.flush()  # get assessment.id before commit
+
+        prediction = Prediction(
+            assessment_id=assessment.id,
+            predicted_career=predicted_career,
+            confidence=confidence,
+            top_3_json=json.dumps(top_3),
+            low_confidence=low_confidence,
+        )
+        db.session.add(prediction)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        traceback.print_exc()
+
+
 # --------------------------------------------------------------------------
 # Routes
 # --------------------------------------------------------------------------
@@ -255,7 +300,34 @@ def index():
         field_info=get_field_info(),
         model_accuracy=model_meta.get("accuracy"),
         ready=model_ready(),
+        db_enabled=DATABASE_ENABLED,
+        user=current_user if DATABASE_ENABLED and current_user.is_authenticated else None,
     )
+
+
+@app.route("/history")
+def history_page():
+    if not DATABASE_ENABLED:
+        return render_template("auth_unavailable.html"), 503
+    if not current_user.is_authenticated:
+        from flask import redirect, url_for
+        return redirect(url_for("auth.login_page"))
+
+    assessments = (
+        Assessment.query.filter_by(user_id=current_user.id)
+        .order_by(Assessment.submitted_at.desc())
+        .all()
+    )
+    rows = []
+    for a in assessments:
+        p = a.prediction
+        rows.append({
+            "submitted_at": a.submitted_at,
+            "predicted_career": p.predicted_career if p else "—",
+            "confidence": p.confidence if p else None,
+            "low_confidence": p.low_confidence if p else False,
+        })
+    return render_template("history.html", rows=rows, user=current_user)
 
 
 @app.route("/health", methods=["GET"])
@@ -308,6 +380,7 @@ def predict():
         low_confidence = top_confidence < CONFIDENCE_THRESHOLD
 
         log_prediction(payload, top_label, top_confidence)
+        save_to_history(payload, top_label, top_confidence, top_3, low_confidence)
 
         response = {
             "predicted_career": top_label,
