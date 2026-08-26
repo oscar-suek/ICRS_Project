@@ -550,13 +550,73 @@ form.addEventListener("submit", async (e) => {
       ? `<p class="warn">${json.message}</p>`
       : "";
 
-    resultBox.innerHTML = `
-      ${warning}
-      <h2>Recommended: ${json.predicted_career}</h2>
-      <p>Confidence: ${json.confidence}%</p>
-      <h3>Top 3</h3>
-      <ul>${list}</ul>
-    `;
+    const career = careerDetails[json.predicted_career];
+
+    if (!career) {
+      resultBox.innerHTML = `
+        ${warning}
+        <h2>Recommended: ${json.predicted_career}</h2>
+        <p>Confidence: ${json.confidence}%</p>
+        <h3>Top 3</h3>
+        <ul>${list}</ul>
+      `;
+    } else {
+      resultBox.innerHTML = `
+        ${warning}
+    
+        <div class="career-header">
+          <p class="result-label">YOUR CAREER RECOMMENDATION</p>
+          <h2>${json.predicted_career}</h2>
+          <div class="confidence">
+            <strong>${json.confidence}%</strong>
+            <span>Confidence</span>
+          </div>
+        </div>
+    
+        <div class="career-section">
+          <h3>About This Career</h3>
+          <p>${career.description}</p>
+        </div>
+    
+        <div class="career-section">
+          <h3>Why This Career?</h3>
+          <p>${career.why}</p>
+        </div>
+    
+        <div class="career-section">
+          <h3>Key Skills</h3>
+          <ul class="career-list">
+            ${career.skills.map(skill => `<li>${skill}</li>`).join("")}
+          </ul>
+        </div>
+    
+        <div class="career-section">
+          <h3>Typical Work Areas</h3>
+          <ul class="career-list">
+            ${career.workAreas.map(area => `<li>${area}</li>`).join("")}
+          </ul>
+        </div>
+    
+        <div class="career-section">
+          <h3>Possible Career Path</h3>
+          <p class="career-path">${career.careerPath}</p>
+        </div>
+    
+        <div class="career-section">
+          <h3>Recommended Next Steps</h3>
+          <ol class="career-list">
+            ${career.nextSteps.map(step => `<li>${step}</li>`).join("")}
+          </ol>
+        </div>
+    
+        <div class="career-section alternatives">
+          <h3>Other Careers You May Like</h3>
+          <ul class="career-list">
+            ${list}
+          </ul>
+        </div>
+      `;
+    }
 
     // Show the Retake button after a successful prediction
     retakeBtn.classList.remove("hidden");
