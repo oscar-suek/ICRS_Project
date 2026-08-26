@@ -28,6 +28,7 @@ if (overlay && closeBtn) {
 // --- Prediction form -------------------------------------------------------
 const form = document.getElementById("predict-form");
 const resultBox = document.getElementById("result");
+const retakeBtn = document.getElementById("retake-btn");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -35,17 +36,21 @@ form.addEventListener("submit", async (e) => {
   // Backstop check — min/max on the inputs already block the browser's
   // native submit, but this catches pasted or scripted values too.
   const invalid = [];
+
   for (const input of form.querySelectorAll("input[type='number']")) {
     const value = parseFloat(input.value);
     const min = parseFloat(input.min);
     const max = parseFloat(input.max);
+
     if (Number.isNaN(value) || value < min || value > max) {
       invalid.push(`${input.name} (must be ${min}–${max})`);
     }
   }
+
   if (invalid.length) {
     resultBox.classList.remove("hidden");
-    resultBox.innerHTML = `<p class="error">Out of range: ${invalid.join(", ")}</p>`;
+    resultBox.innerHTML =
+      `<p class="error">Out of range: ${invalid.join(", ")}</p>`;
     return;
   }
 
@@ -83,10 +88,45 @@ form.addEventListener("submit", async (e) => {
       <h3>Top 3</h3>
       <ul>${list}</ul>
     `;
+
+    // Show the Retake button after a successful prediction
+    retakeBtn.classList.remove("hidden");
+
   } catch (err) {
-    resultBox.innerHTML = `<p class="error">Request failed: ${err}</p>`;
+    resultBox.innerHTML =
+      `<p class="error">Request failed: ${err}</p>`;
   }
 });
+
+
+// --- Retake Assessment ----------------------------------------------------
+if (retakeBtn) {
+  retakeBtn.addEventListener("click", () => {
+
+    // Clear all answers
+    form.reset();
+
+    // Clear the previous recommendation
+    resultBox.innerHTML = "";
+    resultBox.classList.add("hidden");
+
+    // Hide the Retake button until another prediction is made
+    retakeBtn.classList.add("hidden");
+
+    // Return the user to the top of the assessment
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+    // Put the cursor in the first question
+    const firstInput = form.querySelector("input");
+
+    if (firstInput) {
+      setTimeout(() => firstInput.focus(), 400);
+    }
+  });
+}
 
 // --- Logout ---------------------------------------------------------------
 const logoutBtn = document.getElementById("logout-btn");
