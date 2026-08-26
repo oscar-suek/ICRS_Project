@@ -9,7 +9,7 @@ configured — this only ever activates on Vercel once Supabase is connected.
 from flask import Blueprint, jsonify, request, render_template, redirect, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
-from db import db, db_enabled, get_database_url, User
+from app.db import *
 
 auth_bp = Blueprint("auth", __name__)
 login_manager = LoginManager()
