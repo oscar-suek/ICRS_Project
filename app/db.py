@@ -112,14 +112,30 @@ class Prediction(db.Model):
 
 
 def init_db(app):
-    """Call once at startup. No-op (app still runs fine) if no DB is configured."""
     url = get_database_url()
+
     if not url:
+        print("[ICRS] No database URL configured.")
         return False
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = url
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
-    db.init_app(app)
-    with app.app_context():
-        db.create_all()
-    return True
+    try:
+        from sqlalchemy.pool import NullPool
+
+        app.config["SQLALCHEMY_DATABASE_URI"] = url
+
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "poolclass": NullPool,
+            "pool_pre_ping": True,
+        }
+
+        db.init_app(app)
+
+        with app.app_context():
+            db.create_all()
+
+        print("[ICRS] Database connected successfully.")
+        return True
+
+    except Exception as e:
+        print(f"[ICRS] Database initialization failed: {e}")
+        return False
