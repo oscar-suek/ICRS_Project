@@ -252,18 +252,38 @@ button:hover { background: #4f46e5; }
   margin-bottom: 0;
 }
 .about-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  padding: 0.4rem 0.9rem;
+  box-sizing: border-box;
+
+  height: 34px;
+  padding: 0 0.9rem;
+
   border-radius: 999px;
   border: 1px solid #c7d2fe;
   background: #eef2ff;
   color: #4338ca;
+
+  font-family: inherit;
   font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+
   cursor: pointer;
+  margin: 0;
+  grid-column: auto;
 }
 .about-btn:hover {
   background: #e0e7ff;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 #close-intro-modal {
   width: 100%;
