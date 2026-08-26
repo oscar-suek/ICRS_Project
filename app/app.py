@@ -22,8 +22,8 @@ from flask import Flask, jsonify, render_template, request, send_from_directory
 from flask_cors import CORS
 from flask_login import current_user
 
-from db import db, db_enabled, init_db, Assessment, Prediction
-from auth import init_auth
+from app.db import db, db_enabled, init_db, Assessment, Prediction
+from app.auth import init_auth
 
 # --------------------------------------------------------------------------
 # Configuration
